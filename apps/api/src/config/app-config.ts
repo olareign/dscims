@@ -26,8 +26,8 @@ const envSchema = z.object({
   TENANT_GRACE_DAYS: z.coerce.number().int().min(0).max(90).default(7),
   BCRYPT_ROUNDS: z.coerce.number().int().min(4).max(15).default(12),
   ENABLE_API_DOCS: boolean,
-  // Email: `resend` in development, `smtp` in production, `fake` for tests (refused in production).
-  MAIL_PROVIDER: z.enum(['fake', 'resend', 'smtp']).default('fake'),
+  // Email: `smtp` or `resend` (each requires its own credentials); `fake` is for tests only and refused in production.
+  EMAIL_TYPE: z.enum(['fake', 'resend', 'smtp']).default('fake'),
   RESEND_API_KEY: z.string().optional(),
   RESEND_FROM: z.string().optional(),
   SMTP_HOST: z.string().optional(),
@@ -40,12 +40,12 @@ const envSchema = z.object({
   GEOCODER_URL: z.string().default('https://nominatim.openstreetmap.org/reverse'),
 }).superRefine((env, ctx) => {
   const need = (names: (keyof typeof env)[], provider: string) => {
-    for (const name of names) if (!env[name]) ctx.addIssue({ code: 'custom', path: [name], message: `${name} is required when MAIL_PROVIDER=${provider}` });
+    for (const name of names) if (!env[name]) ctx.addIssue({ code: 'custom', path: [name], message: `${name} is required when EMAIL_TYPE=${provider}` });
   };
-  if (env.MAIL_PROVIDER === 'resend') need(['RESEND_API_KEY', 'RESEND_FROM'], 'resend');
-  if (env.MAIL_PROVIDER === 'smtp') need(['SMTP_HOST', 'SMTP_USER', 'SMTP_PASSWORD', 'SMTP_FROM'], 'smtp');
-  if (env.NODE_ENV === 'production' && env.MAIL_PROVIDER === 'fake') {
-    ctx.addIssue({ code: 'custom', path: ['MAIL_PROVIDER'], message: 'MAIL_PROVIDER=fake is not allowed in production. Use smtp.' });
+  if (env.EMAIL_TYPE === 'resend') need(['RESEND_API_KEY', 'RESEND_FROM'], 'resend');
+  if (env.EMAIL_TYPE === 'smtp') need(['SMTP_HOST', 'SMTP_USER', 'SMTP_PASSWORD', 'SMTP_FROM'], 'smtp');
+  if (env.NODE_ENV === 'production' && env.EMAIL_TYPE === 'fake') {
+    ctx.addIssue({ code: 'custom', path: ['EMAIL_TYPE'], message: 'EMAIL_TYPE=fake is not allowed in production. Use smtp or resend.' });
   }
 });
 

@@ -26,8 +26,8 @@ services:
         value: "7"
       - key: SESSION_DAYS
         value: "14"
-      - key: MAIL_PROVIDER
-        value: smtp
+      - key: EMAIL_TYPE # smtp or resend; each needs its own credentials below
+        sync: false
       - key: GEOCODER_USER_AGENT
         value: d-scims/0.1 (rolatzarza@gmail.com)
       # Set these in the dashboard (never commit them):
@@ -39,7 +39,11 @@ services:
         sync: false
       - key: WEB_ORIGIN
         sync: false
-      - key: SMTP_HOST
+      - key: RESEND_API_KEY # only when EMAIL_TYPE=resend
+        sync: false
+      - key: RESEND_FROM # for example: d-scims <no-reply@yourdomain.com>
+        sync: false
+      - key: SMTP_HOST # SMTP_* only when EMAIL_TYPE=smtp
         sync: false
       - key: SMTP_PORT
         sync: false
