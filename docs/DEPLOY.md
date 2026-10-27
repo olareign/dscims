@@ -20,10 +20,13 @@ Email is chosen by `MAIL_PROVIDER`: **Resend in development, SMTP in production*
 2. Set the `sync: false` variables on `dscims-api` (table below). `JWT_SECRET` is generated for you; do not change it later or everyone is signed out.
 3. On every start the container runs `node dist/database/migrate-cli.js` and then the server. The first deploy creates the schema in Neon.
 4. Check `https://<api-service>.onrender.com/health` returns `{"status":"ok"}`.
-5. Create the first platform admin from the service's **Shell** tab (use a password from your password manager; never paste it into chat or commit it):
+5. Create the first platform admin from your own machine, straight into Neon (Render's Shell is a paid feature). Use the **direct** Neon string and a password from your password manager; never commit it:
    ```bash
-   cd /app/apps/api && PLATFORM_ADMIN_PASSWORD='<12+ characters>' node scripts/platform-admin.mjs ops@yourdomain.com "Ops Team"
+   cd apps/api && PLATFORM_ADMIN_PASSWORD='<12+ characters>' DB_SSL=true \
+     MIGRATION_DATABASE_URL='<direct Neon connection string>' \
+     node scripts/platform-admin.mjs ops@yourdomain.com "Ops Team"
    ```
+   Run it again with a new password to rotate it. Then sign in at `/platform/login`.
 
 Free plan notes: the service sleeps after 15 minutes without traffic and the first request afterwards takes about a minute. Phase 1 uses no Redis; Render allows one free Key Value instance per account, so add `REDIS_URL` when a later phase needs queues.
 
