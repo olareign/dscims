@@ -1,52 +1,42 @@
-import { Injectable, Logger } from '@nestjs/common';
-import nodemailer, { type Transporter } from 'nodemailer';
-import { AppConfig } from '../../config/app-config.js';
+import { Inject, Injectable, Logger } from '@nestjs/common';
+import { sha256 } from '../../common/crypto.js';
+import { FakeMailer } from './fake.mailer.js';
+import type { OutboxMessage } from './fake.mailer.js';
+import { MAILER } from './mailer.port.js';
+import type { Mailer, MailMessage } from './mailer.port.js';
 
-export interface OutboxMessage {
-  to: string;
-  subject: string;
-  text: string;
-  link: string;
+const escapeHtml = (v: string) => v.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!);
+
+function layout(heading: string, intro: string, buttonLabel: string, link: string, outro: string): string {
+  return `<!doctype html><html><body style="margin:0;background:#F3F5FA;font-family:system-ui,-apple-system,Segoe UI,sans-serif;color:#0F172A">
+<div style="max-width:520px;margin:0 auto;padding:32px 20px">
+<div style="font-weight:800;font-size:20px;color:#0D1B4C;margin-bottom:20px">d-scims</div>
+<div style="background:#fff;border-radius:16px;padding:28px;border:1px solid #E2E8F0">
+<h1 style="font-size:20px;margin:0 0 12px">${escapeHtml(heading)}</h1>
+<p style="line-height:1.5;margin:0 0 20px">${intro}</p>
+<p style="margin:0 0 20px"><a href="${escapeHtml(link)}" style="display:inline-block;background:#0D1B4C;color:#fff;text-decoration:none;font-weight:600;padding:14px 22px;border-radius:12px">${escapeHtml(buttonLabel)}</a></p>
+<p style="font-size:13px;color:#475569;line-height:1.5;margin:0">${outro}<br><br>If the button does not work, copy this address into your browser:<br><span style="word-break:break-all">${escapeHtml(link)}</span></p>
+</div></div></body></html>`;
 }
 
 @Injectable()
 export class MailService {
   private readonly log = new Logger(MailService.name);
-  private transporter: Transporter | null = null;
-  /** In development and test with no SMTP, messages are kept here (and logged) instead of sent. */
-  readonly outbox: OutboxMessage[] = [];
 
-  constructor(private readonly config: AppConfig) {}
+  constructor(@Inject(MAILER) private readonly mailer: Mailer) {}
 
-  get configured(): boolean {
-    return this.config.mailConfigured;
+  /** Messages kept in memory when the provider is the development stand-in. Empty for real providers. */
+  get outbox(): OutboxMessage[] {
+    return this.mailer instanceof FakeMailer ? this.mailer.outbox : [];
   }
 
-  /** Returns true when the email was handed to a mail server (or to the dev outbox). */
-  async send(message: OutboxMessage): Promise<boolean> {
-    if (!this.config.mailConfigured) {
-      if (this.config.isProduction) return false;
-      this.outbox.push(message);
-      this.log.log(`[dev mail] to ${message.to}: ${message.subject} ${message.link}`);
-      return true;
-    }
-    const { env } = this.config;
-    this.transporter ??= nodemailer.createTransport({
-      host: env.SMTP_HOST,
-      port: env.SMTP_PORT,
-      secure: env.SMTP_SECURE,
-      auth: env.SMTP_USER ? { user: env.SMTP_USER, pass: env.SMTP_PASS } : undefined,
-    });
+  /** Returns true when the provider accepted the message. A failure is logged and never thrown, so the caller can show the link instead. */
+  async send(message: MailMessage): Promise<boolean> {
     try {
-      await this.transporter.sendMail({
-        from: `"${env.MAIL_FROM_NAME}" <${env.MAIL_FROM_ADDRESS}>`,
-        to: message.to,
-        subject: message.subject,
-        text: message.text,
-      });
+      await this.mailer.send(message);
       return true;
     } catch (err) {
-      this.log.error(`Could not send email to ${message.to}: ${(err as Error).message}`);
+      this.log.error(`Could not send email: ${(err as Error).message}`);
       return false;
     }
   }
@@ -55,8 +45,9 @@ export class MailService {
     return this.send({
       to,
       subject: `${business} invited you to d-scims`,
-      link,
       text: `Hello ${name},\n\n${business} added you to d-scims. Set your password here (the link works for 24 hours):\n${link}\n\nIf you were not expecting this, ignore this email.`,
+      html: layout(`Welcome, ${name.split(' ')[0]}`, `<b>${escapeHtml(business)}</b> added you to d-scims. Set your password to get started. You will sign in with this email address.`, 'Set my password', link, 'This link works for 24 hours and only once. If you were not expecting this, ignore this email.'),
+      idempotencyKey: `invite-${sha256(link)}`,
     });
   }
 
@@ -64,8 +55,9 @@ export class MailService {
     return this.send({
       to,
       subject: 'Reset your d-scims password',
-      link,
       text: `Hello ${name},\n\nUse this link to set a new password (it works for 30 minutes):\n${link}\n\nIf you did not ask for this, ignore this email. Your password has not changed.`,
+      html: layout('Reset your password', `Hello ${escapeHtml(name)}, use the button below to set a new password.`, 'Set a new password', link, 'This link works for 30 minutes. If you did not ask for this, ignore this email. Your password has not changed.'),
+      idempotencyKey: `reset-${sha256(link)}`,
     });
   }
 }

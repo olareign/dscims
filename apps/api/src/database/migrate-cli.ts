@@ -2,10 +2,11 @@
 import pg from 'pg';
 import { runMigrations } from './migrator.js';
 
-const url = process.env.DATABASE_URL;
+// Migrations use the direct (non-pooled) connection when there is one: the advisory lock needs a stable session.
+const url = process.env.MIGRATION_DATABASE_URL ?? process.env.DATABASE_URL;
 const client = new pg.Client(
   url
-    ? { connectionString: url, ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : undefined }
+    ? { connectionString: url, ssl: process.env.DB_SSL === 'true' }
     : {
         host: process.env.DB_HOST ?? 'localhost',
         port: Number(process.env.DB_PORT ?? 5456),

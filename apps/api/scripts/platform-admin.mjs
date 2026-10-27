@@ -11,10 +11,10 @@ if (!email || !password || password.length < 12) {
   process.exit(1);
 }
 
-const url = process.env.DATABASE_URL;
+const url = process.env.MIGRATION_DATABASE_URL ?? process.env.DATABASE_URL;
 const client = new pg.Client(
   url
-    ? { connectionString: url, ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : undefined }
+    ? { connectionString: url, ssl: process.env.DB_SSL === 'true' }
     : { host: process.env.DB_HOST ?? 'localhost', port: Number(process.env.DB_PORT ?? 5456), user: process.env.DB_USERNAME ?? 'dscims_user', password: process.env.DB_PASSWORD ?? 'dscims_password', database: process.env.DB_DATABASE ?? 'dscims_db' },
 );
 await client.connect();

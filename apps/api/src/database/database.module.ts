@@ -33,7 +33,7 @@ class MigrationRunner implements OnApplicationBootstrap {
         ...(env.DATABASE_URL
           ? { url: env.DATABASE_URL }
           : { host: env.DB_HOST, port: env.DB_PORT, username: env.DB_USERNAME, password: env.DB_PASSWORD, database: env.DB_DATABASE }),
-        ssl: env.DB_SSL ? { rejectUnauthorized: false } : false,
+        ssl: env.DB_SSL,
         entities: ENTITIES,
         // Never synchronize: the SQL files in scripts/migrations are the schema.
         synchronize: false,

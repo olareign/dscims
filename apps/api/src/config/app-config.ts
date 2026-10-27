@@ -9,6 +9,8 @@ const envSchema = z.object({
   WEB_ORIGIN: z.string().default('http://localhost:3001'),
   PUBLIC_WEB_URL: z.string().default('http://localhost:3001'),
   DATABASE_URL: z.string().optional(),
+  // Direct (non-pooled) connection used for migrations; falls back to DATABASE_URL.
+  MIGRATION_DATABASE_URL: z.string().optional(),
   DB_HOST: z.string().default('localhost'),
   DB_PORT: z.coerce.number().int().default(5456),
   DB_USERNAME: z.string().default('dscims_user'),
@@ -24,18 +26,40 @@ const envSchema = z.object({
   TENANT_GRACE_DAYS: z.coerce.number().int().min(0).max(90).default(7),
   BCRYPT_ROUNDS: z.coerce.number().int().min(4).max(15).default(12),
   ENABLE_API_DOCS: boolean,
+  // Email: `resend` in development, `smtp` in production, `fake` for tests (refused in production).
+  MAIL_PROVIDER: z.enum(['fake', 'resend', 'smtp']).default('fake'),
+  RESEND_API_KEY: z.string().optional(),
+  RESEND_FROM: z.string().optional(),
   SMTP_HOST: z.string().optional(),
   SMTP_PORT: z.coerce.number().int().default(587),
   SMTP_SECURE: boolean,
   SMTP_USER: z.string().optional(),
-  SMTP_PASS: z.string().optional(),
-  MAIL_FROM_ADDRESS: z.string().optional(),
-  MAIL_FROM_NAME: z.string().default('d-scims'),
-  GEOCODER_USER_AGENT: z.string().default('d-scims/0.1 (contact: set GEOCODER_USER_AGENT)'),
+  SMTP_PASSWORD: z.string().optional(),
+  SMTP_FROM: z.string().optional(),
+  GEOCODER_USER_AGENT: z.string().default('d-scims/0.1 (rolatzarza@gmail.com)'),
   GEOCODER_URL: z.string().default('https://nominatim.openstreetmap.org/reverse'),
+}).superRefine((env, ctx) => {
+  const need = (names: (keyof typeof env)[], provider: string) => {
+    for (const name of names) if (!env[name]) ctx.addIssue({ code: 'custom', path: [name], message: `${name} is required when MAIL_PROVIDER=${provider}` });
+  };
+  if (env.MAIL_PROVIDER === 'resend') need(['RESEND_API_KEY', 'RESEND_FROM'], 'resend');
+  if (env.MAIL_PROVIDER === 'smtp') need(['SMTP_HOST', 'SMTP_USER', 'SMTP_PASSWORD', 'SMTP_FROM'], 'smtp');
+  if (env.NODE_ENV === 'production' && env.MAIL_PROVIDER === 'fake') {
+    ctx.addIssue({ code: 'custom', path: ['MAIL_PROVIDER'], message: 'MAIL_PROVIDER=fake is not allowed in production. Use smtp.' });
+  }
 });
 
 export type Env = z.infer<typeof envSchema>;
+
+/** Parses and checks environment variables; throws one readable error naming every problem. */
+export function parseEnv(source: NodeJS.ProcessEnv): Env {
+  const parsed = envSchema.safeParse(source);
+  if (!parsed.success) {
+    const problems = parsed.error.issues.map((i) => `${i.path.join('.')}: ${i.message}`).join('; ');
+    throw new Error(`Invalid environment: ${problems}`);
+  }
+  return parsed.data;
+}
 
 /** The one place that reads process.env. */
 @Injectable()
@@ -43,20 +67,11 @@ export class AppConfig {
   readonly env: Env;
 
   constructor() {
-    const parsed = envSchema.safeParse(process.env);
-    if (!parsed.success) {
-      const problems = parsed.error.issues.map((i) => `${i.path.join('.')}: ${i.message}`).join('; ');
-      throw new Error(`Invalid environment: ${problems}`);
-    }
-    this.env = parsed.data;
+    this.env = parseEnv(process.env);
   }
 
   get isProduction(): boolean {
     return this.env.NODE_ENV === 'production';
-  }
-
-  get mailConfigured(): boolean {
-    return Boolean(this.env.SMTP_HOST && this.env.MAIL_FROM_ADDRESS);
   }
 }
 
