@@ -1,21 +1,33 @@
-# Deploying d-scims (Vercel and Render)
+# Deploying d-scims (Vercel, Render and Neon)
 
-The web app runs on Vercel. The API, Postgres and Redis run on Render. Nothing here is deployed yet: this file and `render.yaml`, `apps/web/vercel.json` and the `Dockerfile` are the prepared setup. Deploy order for every release is **migration, then API, then web**, and API changes inside a phase are additive so the previous web build keeps working during the rollout.
+The web app runs on **Vercel**, the API on **Render** (free plan, Docker), and the database is **Neon** (free plan). Deploy order for every release is **migration, then API, then web**. The API container runs the migration itself before it starts. API changes inside a phase are additive, so the previous web build keeps working during the rollout.
+
+Email is chosen by `MAIL_PROVIDER`: **Resend in development, SMTP in production** (the same adapter pattern as the Àjọ API), and an in-memory `fake` for tests that production refuses.
 
 ## One-time setup
 
-### 1. Render (API, Postgres, Redis)
+### 1. Neon (database)
 
-1. Render dashboard > New > Blueprint > pick this repository. It reads [`render.yaml`](../render.yaml) and creates `dscims-db` (Postgres 16), `dscims-redis` (Key Value) and `dscims-api` (Docker web service). All three are in Frankfurt; keep them in one region.
+1. Create a Neon project named `d-scims` in **AWS Frankfurt (`aws-eu-central-1`)**, next to the Render service. Postgres 17.
+2. Copy two connection strings from the Neon console (Connect):
+   - the **pooled** one (host contains `-pooler`) becomes `DATABASE_URL`;
+   - the **direct** one becomes `MIGRATION_DATABASE_URL` (the migration takes an advisory lock, which needs a stable session).
+3. Migration `001` creates the `dscims_app` role used for row-level security. Neon's default owner role is allowed to create roles; no manual step is needed.
+
+### 2. Render (API)
+
+1. Render dashboard > New > Blueprint > pick this repository. It reads [`render.yaml`](../render.yaml) and creates `dscims-api` (Docker web service, free plan, Frankfurt).
 2. Set the `sync: false` variables on `dscims-api` (table below). `JWT_SECRET` is generated for you; do not change it later or everyone is signed out.
-3. First deploy: the pre-deploy command `node dist/database/migrate-cli.js` creates the schema. Migration `001` creates the `dscims_app` database role used for row-level security. **If it fails with a permission error on `CREATE ROLE`**, connect to the database once with the dashboard's `psql` command and run `CREATE ROLE dscims_app NOLOGIN NOBYPASSRLS;`, then redeploy.
-4. Create the first platform admin from the service's **Shell** tab (password from your password manager, not typed into chat or committed):
+3. On every start the container runs `node dist/database/migrate-cli.js` and then the server. The first deploy creates the schema in Neon.
+4. Check `https://<api-service>.onrender.com/health` returns `{"status":"ok"}`.
+5. Create the first platform admin from the service's **Shell** tab (use a password from your password manager; never paste it into chat or commit it):
    ```bash
    cd /app/apps/api && PLATFORM_ADMIN_PASSWORD='<12+ characters>' node scripts/platform-admin.mjs ops@yourdomain.com "Ops Team"
    ```
-5. Check `https://<api-service>.onrender.com/health` returns `{"status":"ok"}`.
 
-### 2. Vercel (web)
+Free plan notes: the service sleeps after 15 minutes without traffic and the first request afterwards takes about a minute. Phase 1 uses no Redis; Render allows one free Key Value instance per account, so add `REDIS_URL` when a later phase needs queues.
+
+### 3. Vercel (web)
 
 1. New Project > import this repository. Set **Root Directory** to `apps/web` and leave "Include source files outside of the Root Directory" on (needed for `packages/shared`). `apps/web/vercel.json` sets the install and build commands and runs functions in Frankfurt, next to the API.
 2. Environment variables (Production and Preview):
@@ -23,7 +35,7 @@ The web app runs on Vercel. The API, Postgres and Redis run on Render. Nothing h
    | Variable | Value |
    |---|---|
    | `API_URL` | The Render API address, for example `https://dscims-api.onrender.com` |
-   | `NEXT_PUBLIC_SITE_URL` | The public web address (Vercel URL or your domain) |
+   | `NEXT_PUBLIC_SITE_URL` | The public web address (the Vercel URL for now) |
    | `SESSION_DAYS` | `14` (match the API) |
 
 3. After the first deploy, put the web address into the API's `PUBLIC_WEB_URL` and `WEB_ORIGIN` on Render and redeploy the API. Invite and reset links are built from `PUBLIC_WEB_URL`.
@@ -32,27 +44,36 @@ The web app runs on Vercel. The API, Postgres and Redis run on Render. Nothing h
 
 | Variable | Notes |
 |---|---|
-| `DATABASE_URL`, `REDIS_URL` | Filled in by the blueprint |
+| `DATABASE_URL`, `MIGRATION_DATABASE_URL` | Neon pooled and direct strings. `DB_SSL=true` is set by the blueprint |
 | `JWT_SECRET` | Generated by the blueprint |
 | `PUBLIC_WEB_URL`, `WEB_ORIGIN` | The web address from Vercel |
-| `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASS`, `MAIL_FROM_ADDRESS` | Email for invites and password resets. With Resend: host `smtp.resend.com`, port `465`, secure `true`, user `resend`, password = a Resend API key, from = an address on a domain you verified (SPF and DKIM). Until set, invite links are shown to the owner to share by hand |
-| `GEOCODER_USER_AGENT` | A real contact, for example `d-scims/0.1 (ops@yourdomain.com)` |
-| `GEOCODER_URL` | Optional. Default is OpenStreetMap Nominatim, which is for light use only. Point it at a paid provider with a Nominatim-compatible `/reverse` endpoint when volume grows |
+| `MAIL_PROVIDER` | `smtp` (set by the blueprint). The API refuses to start in production with `fake` or with missing SMTP settings |
+| `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM` | Your SMTP account. Port 465 is always implicit TLS; 587 upgrades with STARTTLS. `SMTP_FROM` looks like `d-scims <no-reply@yourdomain.com>` and must be an address your SMTP account may send from (SPF and DKIM set up) |
+| `GEOCODER_USER_AGENT` | `d-scims/0.1 (rolatzarza@gmail.com)` (set by the blueprint) |
+| `GEOCODER_URL` | Optional. Default is OpenStreetMap Nominatim, which is for light use only |
 | `TENANT_GRACE_DAYS` | Days a suspended dealer stays read-only before it is locked (default 7) |
+
+### Local development with Resend
+
+In `apps/api/.env` set:
+
+```
+MAIL_PROVIDER=resend
+RESEND_API_KEY=re_...            # from the Resend dashboard
+RESEND_FROM="d-scims <onboarding@resend.dev>"
+```
+
+Until your own domain is verified in Resend, `onboarding@resend.dev` can only deliver to the email address of your Resend account. With `MAIL_PROVIDER=fake` (the default) links are printed in the API log instead.
 
 ## Release checklist (every phase)
 
 - [ ] CI green on `main`: lint, tests (shared, API, web), builds.
-- [ ] `docker build --target api .` succeeds (CI image check) and the migration applies to a copy of production data.
+- [ ] `docker build --target api .` succeeds and the migration applies to a copy of production data.
 - [ ] Deploy API (migration runs first), then web.
 - [ ] Smoke test on a real low-end Android phone: sign in, install the PWA, add a user, switch to airplane mode and reload.
 - [ ] Tenant isolation: sign in as two dealers, confirm neither sees the other.
-- [ ] Render backups on and a restore tried at least quarterly (PRD section 8: daily backups, 30-day retention).
+- [ ] Neon backups: the free plan keeps a short restore window (6 hours here). Export with `pg_dump` before risky releases and move to a paid plan before real dealer data (PRD section 8 asks for daily backups with 30-day retention).
 
 ## Rollback
 
 Web: promote the previous deployment in Vercel. API: redeploy the previous image from Render. Migrations are forward-only, so every migration must keep the previous API version working; if one cannot, split it across two releases.
-
-## Cost and plans
-
-`render.yaml` uses small paid plans (`basic-256mb` Postgres, `starter` service and Key Value). Check current Render pricing and pick the plans before applying the blueprint. Free Render Postgres expires and is not suitable for dealer data.

@@ -1,47 +1,41 @@
-# Render blueprint for the d-scims API, Postgres and Redis (BullMQ). The web app deploys to Vercel.
+# Render blueprint for the d-scims API, on the free plan. The database is Neon and the web app is on Vercel.
 # Apply with: Render dashboard > New > Blueprint, pointing at this repository. See docs/DEPLOY.md.
-databases:
-  - name: dscims-db
-    databaseName: dscims_db
-    user: dscims_user
-    postgresMajorVersion: "16"
-    plan: basic-256mb
-    region: frankfurt
-    ipAllowList: [] # internal connections only
-
+#
+# Free plan notes: the web service sleeps after 15 minutes without traffic (the first request afterwards takes about a
+# minute). Phase 1 uses no Redis, so none is created here. Render allows one free Key Value instance per account;
+# add REDIS_URL when a later phase needs queues (BullMQ), and move to a paid plan before real dealers depend on this.
 services:
-  - type: keyvalue
-    name: dscims-redis
-    plan: starter
-    region: frankfurt
-    maxmemoryPolicy: noeviction # queues must never be evicted
-    ipAllowList: [] # internal connections only
-
   - type: web
     name: dscims-api
     runtime: docker
     dockerfilePath: ./Dockerfile
     dockerContext: .
-    plan: starter
+    plan: free
     region: frankfurt
     healthCheckPath: /health
-    # Forward-only SQL migrations run before each new version takes traffic.
-    preDeployCommand: node dist/database/migrate-cli.js
+    # Free plans have no pre-deploy step, so the forward-only SQL migrations run first, then the server starts.
+    dockerCommand: sh -c "node dist/database/migrate-cli.js && node dist/main.js"
     autoDeploy: false # promote by hand after the phase checklist is signed off
     envVars:
       - key: NODE_ENV
         value: production
-      - key: DATABASE_URL
-        fromDatabase: { name: dscims-db, property: connectionString }
-      - key: REDIS_URL
-        fromService: { type: keyvalue, name: dscims-redis, property: connectionString }
+      - key: DB_SSL
+        value: "true"
       - key: JWT_SECRET
         generateValue: true
       - key: TENANT_GRACE_DAYS
         value: "7"
       - key: SESSION_DAYS
         value: "14"
+      - key: MAIL_PROVIDER
+        value: smtp
+      - key: GEOCODER_USER_AGENT
+        value: d-scims/0.1 (rolatzarza@gmail.com)
       # Set these in the dashboard (never commit them):
+      - key: DATABASE_URL # Neon pooled connection string
+        sync: false
+      - key: MIGRATION_DATABASE_URL # Neon direct (non-pooled) connection string
+        sync: false
       - key: PUBLIC_WEB_URL # the Vercel URL, used in invite and reset links
         sync: false
       - key: WEB_ORIGIN
@@ -54,9 +48,7 @@ services:
         sync: false
       - key: SMTP_USER
         sync: false
-      - key: SMTP_PASS
+      - key: SMTP_PASSWORD
         sync: false
-      - key: MAIL_FROM_ADDRESS
-        sync: false
-      - key: GEOCODER_USER_AGENT # include a real contact, as the geocoder requires
+      - key: SMTP_FROM # for example: d-scims <no-reply@yourdomain.com>
         sync: false

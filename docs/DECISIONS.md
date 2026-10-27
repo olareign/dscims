@@ -19,7 +19,10 @@
 | Time display | Every date and time shows day, month, year, hour with AM or PM, and WAT, for example `27 Oct 2026, 9:12 AM WAT`. Stored as UTC | Design review 2026-10-27 |
 | Listings | Every list has search, filters, sort and pagination (rows per page on desktop, previous/next on phone) | Design review 2026-10-27 |
 | Responsive | Phone under 700 px (tab bar, sheets), tablet 700 to 1099 px (icon rail), desktop 1100 px and up (sidebar) | Design review 2026-10-27 |
-| Invites | New users and dealer owners get an email link (24 hours, single use) to set their own password. With no email configured, the owner is shown the link to share by hand | Phase 1 build |
+| Invites | New users and dealer owners get an email link (24 hours, single use) to set their own password. If the email provider fails, the owner is shown the link to share by hand | Phase 1 build |
+| Email | `MAIL_PROVIDER`: Resend in development, SMTP in production, in-memory `fake` for tests. Production refuses `fake` and checks each provider's settings at start-up | Requested 2026-10-27, same pattern as the Àjọ API |
+| Hosting (free plans) | Web on Vercel, API on Render free (Docker, migrations run before the server starts), database on Neon free (Frankfurt). No Redis yet: Phase 1 has no queues and Render allows one free Key Value per account | Requested 2026-10-27. Free plans sleep and have short backups; upgrade before real dealer data |
+| Geocoder contact | `rolatzarza@gmail.com` in the geocoder User-Agent | Provided 2026-10-27, "for now" |
 | Suspension | Read-only for `TENANT_GRACE_DAYS` (default 7), then locked | Default chosen in Phase 1; PRD left the length open. Change the env var, or tell me the number you want |
 | Location lookup | Browser coordinates are turned into an address by the API using a Nominatim-compatible endpoint (default OpenStreetMap) | Phase 1 build. OSM is for light use; swap `GEOCODER_URL` for a paid provider as volume grows |
 | Shared package | Built to `dist/` with `tsc` | Next's bundler cannot read the `.js`-suffixed TypeScript imports the API needs |
