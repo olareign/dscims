@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { DEVICE_CONDITIONS, DEVICE_STATUSES, FLAG_OUTCOMES, FLAG_TYPES, MAX_DEVICE_PHOTOS, PAYMENT_METHODS, PROOF_OF_OWNERSHIP_TYPES, proofNeedsApproval } from './device.js';
+import { DEVICE_CONDITIONS, DEVICE_STATUSES, FLAG_OUTCOMES, FLAG_TYPES, MAX_DEVICE_PHOTOS, MAX_PRICE_KOBO, PAYMENT_METHODS, PROOF_OF_OWNERSHIP_TYPES, proofNeedsApproval } from './device.js';
 import { isValidImei } from './imei.js';
 import { DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE } from './pagination.js';
 
@@ -117,7 +117,7 @@ export const sellerListQuery = pageQuery.extend({
   sort: z.enum(['name', 'recent']).default('name'),
 });
 
-const kobo = z.number().int('Use a whole number of kobo').min(1, 'Enter an amount').max(100_000_000_00);
+const kobo = z.number().int('Use a whole number of kobo').min(1, 'Enter an amount').max(MAX_PRICE_KOBO, 'That amount is too large. Check the zeros');
 const shortText = (max: number) => z.string().trim().max(max).optional().nullable().transform((v) => (v ? v : null));
 
 export const purchaseDeviceInput = z

@@ -44,3 +44,6 @@ export type PaymentMethod = (typeof PAYMENT_METHODS)[number];
 export const PAYMENT_METHOD_LABELS: Record<PaymentMethod, string> = { cash: 'Cash', transfer: 'Transfer', part: 'Part payment' };
 
 export const MAX_DEVICE_PHOTOS = 6;
+
+/** The most one phone can be priced at: ₦100 million, in kobo. Anything above is almost surely a typing slip. */
+export const MAX_PRICE_KOBO = 100_000_000_00;

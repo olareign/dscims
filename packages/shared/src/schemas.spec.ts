@@ -61,6 +61,10 @@ describe('phase 2 schemas', () => {
     expect(purchaseInput.safeParse({ ...purchase, devices: [device, device] }).success).toBe(false);
     expect(purchaseInput.safeParse({ ...purchase, devices: [] }).success).toBe(false);
   });
+  it('says plainly when a price has too many zeros', () => {
+    const r = purchaseDeviceInput.safeParse({ ...device, costKobo: 99_999_999_999_999 });
+    expect(r.success ? '' : r.error.issues[0]!.message).toBe('That amount is too large. Check the zeros');
+  });
   it('wants a smaller paid amount for a part payment', () => {
     expect(purchaseInput.safeParse({ ...purchase, paymentMethod: 'part' }).success).toBe(false);
     expect(purchaseInput.safeParse({ ...purchase, paymentMethod: 'part', paidKobo: 100 }).success).toBe(true);
