@@ -25,4 +25,5 @@ WORKDIR /app/apps/api
 ENV NODE_ENV=production
 USER node
 EXPOSE 3006
-CMD ["node", "dist/main.js"]
+# Forward-only SQL migrations run first, then the server starts. Hosts with a pre-deploy step can skip the first half.
+CMD ["sh", "-c", "node dist/database/migrate-cli.js && node dist/main.js"]

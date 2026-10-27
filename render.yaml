@@ -13,8 +13,7 @@ services:
     plan: free
     region: frankfurt
     healthCheckPath: /health
-    # Free plans have no pre-deploy step, so the forward-only SQL migrations run first, then the server starts.
-    dockerCommand: sh -c "node dist/database/migrate-cli.js && node dist/main.js"
+    # No dockerCommand: the Dockerfile's CMD runs the migrations and then the server (free plans have no pre-deploy step).
     autoDeploy: false # promote by hand after the phase checklist is signed off
     envVars:
       - key: NODE_ENV
