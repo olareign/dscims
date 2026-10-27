@@ -31,6 +31,11 @@
 | NIN and BVN | Optional on the seller form, encrypted at rest with a key from an env var, shown as the last 4 digits. No provider verification until Phase 6 | Chosen 2026-10-27 for Phase 2 |
 | Who can buy phones | Owner and manager only. Sales staff never see cost price, seller details or proof, in the UI or the API | Chosen 2026-10-27 for Phase 2 |
 | Phase 2 fields | PRD defaults: IMEI, brand, model, storage, colour, condition, cost and selling price. No pilot dealer details yet | Chosen 2026-10-27; revisit when the pilot dealer is named |
+| Phase 2 follows the PRD where the design differed | Conditions are the PRD's six (Brand new, UK-used, Nigeria-used, Open-box, Refurbished, Faulty), not "Used, good/fair". Proof types are the PRD's three (receipt, certificate of ownership, police or government credentials), not box or warranty card. Flag types are the PRD's six | Built 2026-10-27. INV-1a, INV-2 and INV-7 are P0 requirements, and a box or warranty card would be a weaker proof than the PRD allows |
+| Cost visibility | New capability `cost.view`: owner and managers. Profit stays owner-only (`finance.cost_and_profit`) | Managers type the buying price when they buy, so they must see it. PRD AUTH-3 said managers cannot |
+| Staff and purchases | `purchase.record` is N for sales staff (PRD had A) | Chosen 2026-10-27 |
+| Staff see less on timelines | Proof, review and approval entries and the seller and purchase number are left out of a phone's history for sales staff | Found by a test during Phase 2: the "Received" entry named the seller |
+| Part payment | Recorded as `paid_kobo` on the purchase. There is no seller ledger yet | Design had a Part option; owing the seller is not in the MVP |
 | Jobs | BullMQ via `@nestjs/bullmq` | PRD 9.2. KudiBooks uses `@nestjs/schedule` instead |
 | Files | S3-compatible via AWS SDK v3 with presigned URLs | PRD 9.2. KudiBooks uses Cloudinary |
 | Money | Integer kobo | PRD section 7. KudiBooks uses decimal strings |

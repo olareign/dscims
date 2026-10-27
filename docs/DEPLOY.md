@@ -53,6 +53,8 @@ Free plan notes: the service sleeps after 15 minutes without traffic and the fir
 | `EMAIL_TYPE` | `smtp` or `resend`. `smtp` requires the `SMTP_*` variables below; `resend` requires `RESEND_API_KEY` and `RESEND_FROM`. Missing credentials stop the API at start-up |
 | `RESEND_API_KEY`, `RESEND_FROM` | Only for `EMAIL_TYPE=resend`. `RESEND_FROM` looks like `d-scims <no-reply@yourdomain.com>`; until your domain is verified in Resend, only `onboarding@resend.dev` works and it delivers only to your own Resend account address |
 | `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM` | Your SMTP account. Port 465 is always implicit TLS; 587 upgrades with STARTTLS. `SMTP_FROM` looks like `d-scims <no-reply@yourdomain.com>` and must be an address your SMTP account may send from (SPF and DKIM set up) |
+| `CLOUDINARY_URL` | Required in production from Phase 2: `cloudinary://api_key:api_secret@cloud_name` from the Cloudinary dashboard (Settings > API Keys). Files are stored as `authenticated` assets and opened through short-lived signed links |
+| `FIELD_ENCRYPTION_KEY` | Required in production from Phase 2: `openssl rand -base64 32`. Encrypts sellers' NIN and BVN. Keep it safe and never change it, or stored values become unreadable |
 | `GEOCODER_USER_AGENT` | `d-scims/0.1 (rolatzarza@gmail.com)` (set by the blueprint) |
 | `GEOCODER_URL` | Optional. Default is OpenStreetMap Nominatim, which is for light use only |
 | `TENANT_GRACE_DAYS` | Days a suspended dealer stays read-only before it is locked (default 7) |
