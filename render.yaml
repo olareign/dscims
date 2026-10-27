@@ -1,0 +1,62 @@
+# Render blueprint for the d-scims API, Postgres and Redis (BullMQ). The web app deploys to Vercel.
+# Apply with: Render dashboard > New > Blueprint, pointing at this repository. See docs/DEPLOY.md.
+databases:
+  - name: dscims-db
+    databaseName: dscims_db
+    user: dscims_user
+    postgresMajorVersion: "16"
+    plan: basic-256mb
+    region: frankfurt
+    ipAllowList: [] # internal connections only
+
+services:
+  - type: keyvalue
+    name: dscims-redis
+    plan: starter
+    region: frankfurt
+    maxmemoryPolicy: noeviction # queues must never be evicted
+    ipAllowList: [] # internal connections only
+
+  - type: web
+    name: dscims-api
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    plan: starter
+    region: frankfurt
+    healthCheckPath: /health
+    # Forward-only SQL migrations run before each new version takes traffic.
+    preDeployCommand: node dist/database/migrate-cli.js
+    autoDeploy: false # promote by hand after the phase checklist is signed off
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase: { name: dscims-db, property: connectionString }
+      - key: REDIS_URL
+        fromService: { type: keyvalue, name: dscims-redis, property: connectionString }
+      - key: JWT_SECRET
+        generateValue: true
+      - key: TENANT_GRACE_DAYS
+        value: "7"
+      - key: SESSION_DAYS
+        value: "14"
+      # Set these in the dashboard (never commit them):
+      - key: PUBLIC_WEB_URL # the Vercel URL, used in invite and reset links
+        sync: false
+      - key: WEB_ORIGIN
+        sync: false
+      - key: SMTP_HOST
+        sync: false
+      - key: SMTP_PORT
+        sync: false
+      - key: SMTP_SECURE
+        sync: false
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASS
+        sync: false
+      - key: MAIL_FROM_ADDRESS
+        sync: false
+      - key: GEOCODER_USER_AGENT # include a real contact, as the geocoder requires
+        sync: false
