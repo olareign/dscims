@@ -11,6 +11,15 @@ describe('role matrix', () => {
     expect(accessFor('manager', 'finance.cost_and_profit')).toBe('N');
     expect(accessFor('staff', 'finance.cost_and_profit')).toBe('N');
   });
+  it('lets managers see cost price but not profit, and keeps staff out of purchases', () => {
+    expect(accessFor('manager', 'cost.view')).toBe('Y');
+    expect(accessFor('staff', 'cost.view')).toBe('N');
+    expect(accessFor('manager', 'purchase.record')).toBe('Y');
+    expect(accessFor('staff', 'purchase.record')).toBe('N');
+  });
+  it('lets only the owner approve proof of ownership', () => {
+    expect(ROLES.filter((r) => accessFor(r, 'proof.approve') === 'Y')).toEqual(['owner']);
+  });
   it('lets only the owner resolve flags (INV-8)', () => {
     expect(ROLES.filter((r) => accessFor(r, 'flag.resolve') === 'Y')).toEqual(['owner']);
   });

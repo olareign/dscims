@@ -15,6 +15,8 @@ export const CAPABILITIES = [
   'flag.raise',
   'flag.resolve',
   'sale.void_or_return',
+  'cost.view',
+  'proof.approve',
   'finance.cost_and_profit',
   'reports.view',
   'users.manage',
@@ -27,13 +29,17 @@ export type Capability = (typeof CAPABILITIES)[number];
 export const ROLE_ACCESS: Record<Capability, Record<Role, Access>> = {
   'inventory.view': { owner: 'Y', manager: 'Y', staff: 'Y' },
   'device.write': { owner: 'Y', manager: 'Y', staff: 'A' },
-  'purchase.record': { owner: 'Y', manager: 'Y', staff: 'A' },
+  // Design review 2026-10-27: only the owner and managers buy phones. The PRD's "A" for staff became N.
+  'purchase.record': { owner: 'Y', manager: 'Y', staff: 'N' },
   'sale.record': { owner: 'Y', manager: 'Y', staff: 'Y' },
   'sale.credit': { owner: 'Y', manager: 'Y', staff: 'A' },
   'sale.discount_above_limit': { owner: 'Y', manager: 'A', staff: 'N' },
   'flag.raise': { owner: 'Y', manager: 'Y', staff: 'Y' },
   'flag.resolve': { owner: 'Y', manager: 'N', staff: 'N' },
   'sale.void_or_return': { owner: 'Y', manager: 'A', staff: 'N' },
+  // Managers enter cost prices when they buy, so they see them; profit stays with the owner.
+  'cost.view': { owner: 'Y', manager: 'Y', staff: 'N' },
+  'proof.approve': { owner: 'Y', manager: 'N', staff: 'N' },
   'finance.cost_and_profit': { owner: 'Y', manager: 'N', staff: 'N' },
   'reports.view': { owner: 'Y', manager: 'A', staff: 'N' }, // manager: "Limited" in the PRD; modelled as A until scoped
   'users.manage': { owner: 'Y', manager: 'N', staff: 'N' },
