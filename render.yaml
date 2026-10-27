@@ -43,6 +43,10 @@ services:
         sync: false
       - key: RESEND_FROM # for example: d-scims <no-reply@yourdomain.com>
         sync: false
+      - key: CLOUDINARY_URL # cloudinary://api_key:api_secret@cloud_name (private seller IDs, proofs, photos)
+        sync: false
+      - key: FIELD_ENCRYPTION_KEY # openssl rand -base64 32; encrypts NIN and BVN
+        sync: false
       - key: SMTP_HOST # SMTP_* only when EMAIL_TYPE=smtp
         sync: false
       - key: SMTP_PORT
