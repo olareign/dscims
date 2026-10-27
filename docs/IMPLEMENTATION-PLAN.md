@@ -65,8 +65,9 @@ Exit: owner onboarded on a phone from a Vercel/Render staging URL; staff cannot 
 
 Goal: record what is bought, from whom, with proof of ownership, and track each device.
 
-- **Backend:** devices with IMEI Luhn check and per-tenant uniqueness, conditions, status lifecycle and `DeviceEvent`s, quantity items, photos and private uploads with signed URLs, proof of ownership types (with owner approval for certificate and police/government credentials), flags and owner resolution, sellers with encrypted NIN/BVN and statement upload, purchases with declaration and purchase receipt [INV-1 to INV-8, SELL-1 to SELL-4, DOC-3].
+- **Backend:** devices with IMEI Luhn check and per-tenant uniqueness, conditions, status lifecycle and `DeviceEvent`s, quantity items, photos and private uploads on Cloudinary with signed URLs, proof of ownership types (with owner approval for certificate and police/government credentials), flags and owner resolution, sellers with encrypted NIN/BVN and statement upload, purchases with declaration and purchase receipt [INV-1 to INV-8, SELL-1 to SELL-4, DOC-3].
 - **Frontend:** inventory list and search, device detail with timeline, flag and resolve flow, seller registration and profile, guided purchase flow (seller, devices, proof, declaration, payment).
+- **Design:** 15 boards in the canvas (sections 6 to 9): https://claude.ai/artifact/AY1Zbftw8zFe4Ye7T7z9Cu. Awaiting approval.
 - **Exit:** a purchase creates devices and a receipt; a flagged device is blocked from the picker; cost price hidden from staff in UI and API.
 
 ## Phase 3: Sales, credit, returns and receipts (stage 3)

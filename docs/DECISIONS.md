@@ -27,6 +27,10 @@
 | Location lookup | Browser coordinates are turned into an address by the API using a Nominatim-compatible endpoint (default OpenStreetMap) | Phase 1 build. OSM is for light use; swap `GEOCODER_URL` for a paid provider as volume grows |
 | Shared package | Built to `dist/` with `tsc` | Next's bundler cannot read the `.js`-suffixed TypeScript imports the API needs |
 | Phase 1 design departures | Global search and the notification count were left out; the bell opens security activity | Nothing is searchable yet and there is no unread tracking |
+| File storage | Cloudinary, using `authenticated` delivery and short-lived signed URLs for seller IDs, proof photos and device photos | Chosen 2026-10-27 for Phase 2. Replaces the PRD's S3-compatible storage; KudiBooks already uses Cloudinary. Free plan limits apply |
+| NIN and BVN | Optional on the seller form, encrypted at rest with a key from an env var, shown as the last 4 digits. No provider verification until Phase 6 | Chosen 2026-10-27 for Phase 2 |
+| Who can buy phones | Owner and manager only. Sales staff never see cost price, seller details or proof, in the UI or the API | Chosen 2026-10-27 for Phase 2 |
+| Phase 2 fields | PRD defaults: IMEI, brand, model, storage, colour, condition, cost and selling price. No pilot dealer details yet | Chosen 2026-10-27; revisit when the pilot dealer is named |
 | Jobs | BullMQ via `@nestjs/bullmq` | PRD 9.2. KudiBooks uses `@nestjs/schedule` instead |
 | Files | S3-compatible via AWS SDK v3 with presigned URLs | PRD 9.2. KudiBooks uses Cloudinary |
 | Money | Integer kobo | PRD section 7. KudiBooks uses decimal strings |
