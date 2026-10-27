@@ -1,7 +1,7 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import bcrypt from 'bcrypt';
-import { EntityManager, IsNull } from 'typeorm';
+import { EntityManager, IsNull, Not } from 'typeorm';
 import type { MeDto, UserDto } from '@dscims/shared';
 import { AppError, accessEnded } from '../../common/errors.js';
 import type { Principal, ReqMeta } from '../../common/auth.types.js';
@@ -231,6 +231,8 @@ export class AuthService {
         throw new AppError(HttpStatus.BAD_REQUEST, 'BAD_CREDENTIALS', 'Your current password is wrong');
       }
       await m.update(User, { id: user.id }, { passwordHash: await bcrypt.hash(next, this.config.env.BCRYPT_ROUNDS), updatedAt: new Date() });
+      // Other devices are signed out (someone else may be using the old password); this one stays signed in.
+      await m.update(Session, { userId: user.id, id: Not(p.sessionId), revokedAt: IsNull() }, { revokedAt: new Date() });
       await this.audit.record(m, { tenantId: p.tenantId, actor: { id: p.userId, name: p.name, role: p.role }, action: 'auth.password_changed', category: 'security', message: 'changed their password', entity: { type: 'user', id: user.id, label: user.email }, meta });
     });
   }

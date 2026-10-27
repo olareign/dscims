@@ -91,4 +91,14 @@ describe('auth (email and password only)', () => {
     await request(ctx.http).post('/auth/change-password').set(bearer(user.token)).send({ currentPassword: 'wrong', password: 'Fresh-pass-1234' }).expect(400);
     await request(ctx.http).post('/auth/change-password').set(bearer(user.token)).send({ currentPassword: PASSWORD, password: 'Fresh-pass-1234' }).expect(204);
   });
+
+  it('signs the other devices out when the password changes, but not the one that changed it', async () => {
+    const user = await addUser(ctx, dealer, 'staff', 'Two Devices');
+    const other = await request(ctx.http).post('/auth/login').send({ email: user.email, password: PASSWORD }).expect(200);
+    await request(ctx.http).get('/auth/me').set(bearer(other.body.token)).expect(200);
+    await request(ctx.http).post('/auth/change-password').set(bearer(user.token)).send({ currentPassword: PASSWORD, password: 'Fresh-pass-1234' }).expect(204);
+    await request(ctx.http).get('/auth/me').set(bearer(other.body.token)).expect(401);
+    await request(ctx.http).get('/auth/me').set(bearer(user.token)).expect(200);
+    await request(ctx.http).post('/auth/login').send({ email: user.email, password: 'Fresh-pass-1234' }).expect(200);
+  });
 });

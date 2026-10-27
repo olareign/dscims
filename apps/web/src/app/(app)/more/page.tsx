@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { CaretRight, ShieldCheck, SignOut, SlidersHorizontal, Storefront, UsersThree } from "@phosphor-icons/react/dist/ssr";
+import { CaretRight, ShieldCheck, SignOut, SlidersHorizontal, Storefront, UserCircle, UsersThree } from "@phosphor-icons/react/dist/ssr";
 import { ROLE_LABELS } from "@dscims/shared";
 import { InstallApp } from "@/components/install-app";
 import { requireMe } from "@/lib/session";
@@ -36,6 +36,7 @@ export default async function MorePage() {
       )}
       <p className="up" style={{ margin: "6px 0 0" }}>This device</p>
       <div className="row wrapf" style={{ gap: 10 }}>
+        <Link href="/account" className="btn g"><UserCircle className="i s" aria-hidden /> Your account</Link>
         <InstallApp className="btn g" />
         <form action={signOut}><button type="submit" className="btn d"><SignOut className="i s" aria-hidden /> Sign out</button></form>
       </div>

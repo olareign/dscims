@@ -38,7 +38,7 @@ export function SideNav({ items }: { items: NavItem[] }) {
 
 export function TabBar({ items }: { items: NavItem[] }) {
   const pathname = usePathname();
-  const moreRoutes = ["/more", "/users", "/shops", "/audit", "/settings"];
+  const moreRoutes = ["/more", "/account", "/users", "/shops", "/audit", "/settings"];
   return (
     <nav className="tabs" aria-label="Main">
       {items.map((item) => {
@@ -56,7 +56,7 @@ export function TabBar({ items }: { items: NavItem[] }) {
 }
 
 const CRUMBS: [string, string, string][] = [
-  ["/users", "Admin", "Users"], ["/shops", "Admin", "Shops"], ["/audit", "Admin", "Audit log"], ["/settings", "Admin", "Sales rules"], ["/more", "Account", "More"],
+  ["/users", "Admin", "Users"], ["/shops", "Admin", "Shops"], ["/audit", "Admin", "Audit log"], ["/settings", "Admin", "Sales rules"], ["/more", "Account", "More"], ["/account", "Account", "Your account"],
 ];
 
 export function Crumb() {

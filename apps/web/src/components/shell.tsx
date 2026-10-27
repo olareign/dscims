@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { Bell, CaretUpDown, SignOut, Storefront } from "@phosphor-icons/react/dist/ssr";
+import { Bell, CaretUpDown, SignOut, Storefront, UserCircle } from "@phosphor-icons/react/dist/ssr";
 import { ROLE_LABELS } from "@dscims/shared";
 import type { MeDto } from "@dscims/shared";
 import { signOut } from "@/app/(app)/actions";
@@ -71,6 +71,7 @@ export function Shell({ me, shopLabel, children }: { me: MeDto; shopLabel: strin
             <div className="pop">
               <div style={{ padding: "8px 12px 10px" }}><div className="b">{me.user.name}</div><div className="sm mut" style={{ overflowWrap: "anywhere" }}>{me.user.email}</div><span className="badge" style={{ marginTop: 6 }}>{ROLE_LABELS[me.user.role]}</span></div>
               <div className="sep" style={{ margin: "4px 0" }} />
+              <Link href="/account"><UserCircle className="i s" aria-hidden /> Your account</Link>
               <form action={signOut}><button type="submit"><SignOut className="i s" aria-hidden /> Sign out</button></form>
             </div>
           </details>
