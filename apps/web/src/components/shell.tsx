@@ -14,7 +14,8 @@ export function Shell({ me, shopLabel, children }: { me: MeDto; shopLabel: strin
   const owner = me.user.role === "owner";
   const workspace: NavItem[] = [
     { icon: "overview", label: "Overview", href: "/" },
-    { icon: "stock", label: "Stock", href: "/stock", soon: true },
+    { icon: "stock", label: "Stock", href: "/stock" },
+    ...(me.user.role !== "staff" ? [{ icon: "sellers", label: "Sellers", href: "/sellers" } as NavItem] : []),
     { icon: "sell", label: "Sell", href: "/sell", soon: true },
     { icon: "owing", label: "Owing", href: "/owing", soon: true },
     ...(owner ? [{ icon: "reports", label: "Reports", href: "/reports", soon: true } as NavItem] : []),
@@ -29,7 +30,7 @@ export function Shell({ me, shopLabel, children }: { me: MeDto; shopLabel: strin
     : [];
   const tabs: NavItem[] = [
     { icon: "home", label: "Home", href: "/" },
-    { icon: "stock", label: "Stock", href: "/stock", soon: true },
+    { icon: "stock", label: "Stock", href: "/stock" },
     { icon: "sell", label: "Sell", href: "/sell", soon: true },
     { icon: "owing", label: "Owing", href: "/owing", soon: true },
     { icon: "more", label: "More", href: "/more" },

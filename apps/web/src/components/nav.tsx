@@ -2,10 +2,10 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Bell, ChartBar, House, List, Package, ShieldCheck, SlidersHorizontal, SquaresFour, Storefront, Tag, UsersThree, Wallet } from "@phosphor-icons/react";
+import { Bell, ChartBar, House, List, Package, ShieldCheck, UserList, SlidersHorizontal, SquaresFour, Storefront, Tag, UsersThree, Wallet } from "@phosphor-icons/react";
 import type { Icon } from "@phosphor-icons/react";
 
-const ICONS: Record<string, Icon> = { overview: SquaresFour, home: House, stock: Package, sell: Tag, owing: Wallet, reports: ChartBar, users: UsersThree, shops: Storefront, audit: ShieldCheck, rules: SlidersHorizontal, more: List, bell: Bell };
+const ICONS: Record<string, Icon> = { overview: SquaresFour, home: House, stock: Package, sell: Tag, owing: Wallet, sellers: UserList, reports: ChartBar, users: UsersThree, shops: Storefront, audit: ShieldCheck, rules: SlidersHorizontal, more: List, bell: Bell };
 
 export interface NavItem {
   icon: keyof typeof ICONS;
@@ -38,7 +38,7 @@ export function SideNav({ items }: { items: NavItem[] }) {
 
 export function TabBar({ items }: { items: NavItem[] }) {
   const pathname = usePathname();
-  const moreRoutes = ["/more", "/account", "/users", "/shops", "/audit", "/settings"];
+  const moreRoutes = ["/more", "/account", "/sellers", "/users", "/shops", "/audit", "/settings"];
   return (
     <nav className="tabs" aria-label="Main">
       {items.map((item) => {
@@ -56,7 +56,7 @@ export function TabBar({ items }: { items: NavItem[] }) {
 }
 
 const CRUMBS: [string, string, string][] = [
-  ["/users", "Admin", "Users"], ["/shops", "Admin", "Shops"], ["/audit", "Admin", "Audit log"], ["/settings", "Admin", "Sales rules"], ["/more", "Account", "More"], ["/account", "Account", "Your account"],
+  ["/users", "Admin", "Users"], ["/shops", "Admin", "Shops"], ["/audit", "Admin", "Audit log"], ["/settings", "Admin", "Sales rules"], ["/stock/buy", "Stock", "Buy phones"], ["/stock", "Workspace", "Stock"], ["/sellers", "Workspace", "Sellers"], ["/more", "Account", "More"], ["/account", "Account", "Your account"],
 ];
 
 export function Crumb() {

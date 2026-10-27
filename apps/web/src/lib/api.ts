@@ -61,6 +61,19 @@ export async function api<T>(path: string, options: Options = {}): Promise<T> {
   return json as T;
 }
 
+/** For routes that pass files or PDFs through: the same sign-in, but the raw response comes back (redirects are not followed). */
+export async function apiRaw(path: string, init: { method?: string; body?: BodyInit; query?: Query } = {}): Promise<Response> {
+  const url = new URL(path, API_URL);
+  for (const [k, v] of Object.entries(init.query ?? {})) if (v !== undefined && v !== null && v !== "") url.searchParams.set(k, String(v));
+  const token = (await cookies()).get(USER_COOKIE)?.value;
+  const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
+  try {
+    return await fetch(url, { method: init.method ?? "GET", headers, body: init.body, redirect: "manual", cache: "no-store" });
+  } catch {
+    return Response.json({ code: "NETWORK", message: "We could not reach the server. Check your connection and try again." }, { status: 502 });
+  }
+}
+
 function safeJson(text: string): unknown {
   try {
     return JSON.parse(text);

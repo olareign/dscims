@@ -46,6 +46,13 @@ export async function requireOwner(): Promise<MeDto> {
   return me;
 }
 
+/** Buying phones, seller records and their IDs are for the owner and managers. */
+export async function requireBuyer(): Promise<MeDto> {
+  const me = await requireMe();
+  if (me.user.role === "staff") redirect("/stock");
+  return me;
+}
+
 /** The shop the owner picked in the switcher; managers and staff are fixed to their own. */
 export async function currentShopId(me: MeDto): Promise<string | null> {
   if (me.user.role !== "owner") return me.user.shopId;

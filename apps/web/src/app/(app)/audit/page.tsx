@@ -10,8 +10,8 @@ import { currentShopId, requireOwner } from "@/lib/session";
 
 export const metadata = { title: "Audit log" };
 
-const TONE = { sign_in: "ok", security: "warn", user: "", settings: "gray" } as const;
-const TABS = [[undefined, "All"], ["sign_in", "Sign-ins"], ["security", "Security"], ["user", "Users"], ["settings", "Settings"]] as const;
+const TONE = { sign_in: "ok", security: "warn", user: "", settings: "gray", stock: "ok" } as const;
+const TABS = [[undefined, "All"], ["sign_in", "Sign-ins"], ["security", "Security"], ["user", "Users"], ["settings", "Settings"], ["stock", "Stock"]] as const;
 const initials = (n: string) => n.split(/\s+/).map((p) => p[0]).slice(0, 2).join("").toUpperCase();
 const pretty = (v: Record<string, unknown> | null) => (v ? Object.entries(v).map(([k, x]) => `${k.replace(/([A-Z])/g, " $1").toLowerCase()}: ${String(x)}`).join(", ") : "None");
 

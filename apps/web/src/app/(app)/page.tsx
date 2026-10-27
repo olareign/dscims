@@ -9,7 +9,7 @@ import { requireMe } from "@/lib/session";
 
 export const metadata = { title: "Overview" };
 
-const CATEGORY_TONE = { sign_in: "ok", security: "warn", user: "", settings: "gray" } as const;
+const CATEGORY_TONE = { sign_in: "ok", security: "warn", user: "", settings: "gray", stock: "ok" } as const;
 
 export default async function OverviewPage() {
   const me = await requireMe();
