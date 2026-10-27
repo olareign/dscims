@@ -9,7 +9,7 @@ describe('migrations keep the schema and the entities in step', () => {
   afterAll(async () => { await ctx.app.close(); });
 
   const typeFamily: Record<string, string> = {
-    uuid: 'uuid', varchar: 'character varying', char: 'character', text: 'text', integer: 'integer', boolean: 'boolean',
+    uuid: 'uuid', varchar: 'character varying', char: 'character', text: 'text', integer: 'integer', bigint: 'bigint', boolean: 'boolean',
     timestamptz: 'timestamp with time zone', jsonb: 'jsonb', 'double precision': 'double precision',
   };
 
@@ -33,7 +33,7 @@ describe('migrations keep the schema and the entities in step', () => {
   it('enables row-level security on every tenant table', async () => {
     const rows: { relname: string; relrowsecurity: boolean }[] = await ctx.ds.query(
       "SELECT c.relname, c.relrowsecurity FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace WHERE n.nspname = 'public' AND c.relkind = 'r'");
-    const tenantTables = ['tenants', 'shops', 'users', 'sessions', 'user_tokens', 'settings', 'audit_log', 'idempotency_keys'];
+    const tenantTables = ['tenants', 'shops', 'users', 'sessions', 'user_tokens', 'settings', 'audit_log', 'idempotency_keys', 'files', 'sellers', 'purchases', 'devices', 'device_photos', 'device_flags', 'device_events'];
     for (const t of tenantTables) expect(rows.find((r) => r.relname === t)?.relrowsecurity, t).toBe(true);
     // Any future table with a tenant_id column must be added to the list above.
     const withTenant: { table_name: string }[] = await ctx.ds.query("SELECT table_name FROM information_schema.columns WHERE table_schema = 'public' AND column_name = 'tenant_id'");

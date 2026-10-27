@@ -54,7 +54,7 @@ export class AuditQueryService {
   counts(tenantId: string): Promise<Record<keyof typeof AUDIT_CATEGORY_LABELS | 'all', number>> {
     return this.db.run(tenantId, async (m) => {
       const rows: { category: keyof typeof AUDIT_CATEGORY_LABELS; n: string }[] = await m.query('SELECT category, count(*)::text AS n FROM audit_log GROUP BY category');
-      const out = { all: 0, sign_in: 0, security: 0, user: 0, settings: 0 };
+      const out = { all: 0, sign_in: 0, security: 0, user: 0, settings: 0, stock: 0 };
       for (const r of rows) { out[r.category] = Number(r.n); out.all += Number(r.n); }
       return out;
     });

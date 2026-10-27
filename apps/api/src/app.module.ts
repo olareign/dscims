@@ -8,6 +8,7 @@ import { AppConfig, AppConfigModule } from './config/app-config.js';
 import { AuthGuard, CapabilityGuard } from './core/auth/auth.guard.js';
 import { CoreModule } from './core/core.module.js';
 import { DatabaseModule } from './database/database.module.js';
+import { StorageModule } from './storage/storage.module.js';
 import { HealthModule } from './health/health.module.js';
 import { BillingModule } from './billing/billing.module.js';
 import { DemoModule } from './demo/demo.module.js';
@@ -26,6 +27,7 @@ import { TransactionsModule } from './transactions/transactions.module.js';
     // 120 requests a minute per address overall; sign-in and reset routes set stricter limits.
     ThrottlerModule.forRoot({ throttlers: [{ ttl: 60000, limit: 120 }], skipIf: () => process.env.NODE_ENV === 'test' }),
     DatabaseModule,
+    StorageModule,
     // Jobs (PDFs, reports, reminders) arrive in later phases. Handlers must be idempotent.
     BullModule.forRootAsync({
       inject: [AppConfig],

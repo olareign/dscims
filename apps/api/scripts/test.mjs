@@ -1,4 +1,7 @@
 import { randomBytes } from 'node:crypto';
+import { mkdtempSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import pg from 'pg';
@@ -33,6 +36,7 @@ try {
       BCRYPT_ROUNDS: '4',
       TENANT_GRACE_DAYS: '7',
       PUBLIC_WEB_URL: 'http://web.test',
+      LOCAL_STORAGE_DIR: mkdtempSync(join(tmpdir(), 'dscims-test-files-')),
       DSCIMS_TEST_DATABASE_READY: '1',
     },
   });

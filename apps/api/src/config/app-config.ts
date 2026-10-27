@@ -36,6 +36,14 @@ const envSchema = z.object({
   SMTP_USER: z.string().optional(),
   SMTP_PASSWORD: z.string().optional(),
   SMTP_FROM: z.string().optional(),
+  // Private files (seller IDs, proof of ownership, device photos): Cloudinary in production, a local folder otherwise.
+  CLOUDINARY_URL: z.string().optional(),
+  CLOUDINARY_CLOUD_NAME: z.string().optional(),
+  CLOUDINARY_API_KEY: z.string().optional(),
+  CLOUDINARY_API_SECRET: z.string().optional(),
+  LOCAL_STORAGE_DIR: z.string().default('.storage'),
+  // Encrypts NIN and BVN at rest (SELL-1). Any string of 32+ characters: openssl rand -base64 32
+  FIELD_ENCRYPTION_KEY: z.string().min(32, 'FIELD_ENCRYPTION_KEY must be at least 32 characters (openssl rand -base64 32)').optional(),
   GEOCODER_USER_AGENT: z.string().default('d-scims/0.1 (rolatzarza@gmail.com)'),
   GEOCODER_URL: z.string().default('https://nominatim.openstreetmap.org/reverse'),
 }).superRefine((env, ctx) => {
@@ -44,6 +52,11 @@ const envSchema = z.object({
   };
   if (env.EMAIL_TYPE === 'resend') need(['RESEND_API_KEY', 'RESEND_FROM'], 'resend');
   if (env.EMAIL_TYPE === 'smtp') need(['SMTP_HOST', 'SMTP_USER', 'SMTP_PASSWORD', 'SMTP_FROM'], 'smtp');
+  if (env.NODE_ENV === 'production') {
+    if (!env.FIELD_ENCRYPTION_KEY) ctx.addIssue({ code: 'custom', path: ['FIELD_ENCRYPTION_KEY'], message: 'FIELD_ENCRYPTION_KEY is required in production' });
+    const cloudinary = env.CLOUDINARY_URL || (env.CLOUDINARY_CLOUD_NAME && env.CLOUDINARY_API_KEY && env.CLOUDINARY_API_SECRET);
+    if (!cloudinary) ctx.addIssue({ code: 'custom', path: ['CLOUDINARY_URL'], message: 'Cloudinary is required in production: set CLOUDINARY_URL (cloudinary://key:secret@cloud-name)' });
+  }
   if (env.NODE_ENV === 'production' && env.EMAIL_TYPE === 'fake') {
     ctx.addIssue({ code: 'custom', path: ['EMAIL_TYPE'], message: 'EMAIL_TYPE=fake is not allowed in production. Use smtp or resend.' });
   }
