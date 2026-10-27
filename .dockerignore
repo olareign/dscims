@@ -1,0 +1,11 @@
+.git
+**/node_modules
+**/dist
+**/.next
+**/.turbo
+**/.env
+**/.env.*
+**/.storage
+**/coverage
+**/*.tsbuildinfo
+.pdf-samples

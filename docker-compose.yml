@@ -1,0 +1,32 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: dscims_postgres
+    environment:
+      POSTGRES_DB: dscims_db
+      POSTGRES_USER: dscims_user
+      POSTGRES_PASSWORD: dscims_password
+    ports:
+      - "5456:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - dscims_network
+
+  redis:
+    image: redis:7-alpine
+    container_name: dscims_redis
+    ports:
+      - "6381:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - dscims_network
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  dscims_network:
+    driver: bridge
