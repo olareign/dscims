@@ -67,3 +67,7 @@ pnpm --filter web lint && pnpm --filter web build
 **Copy.** Plain dealer words: In stock, Sold, Owing, Flagged. No accounting jargon. Receipts and terms must say the app provides records and does not certify a device is not stolen.
 
 **Commits.** Conventional Commits, small and focused. No AI attribution anywhere.
+
+## List toolbars
+
+Every list page uses `FilterForm`. Controls in the bar (search, selects, dates, buttons) take their height from `--ctl-h` and the row is bottom-aligned, so labelled and unlabelled controls share one baseline. Do not set a pixel height on a toolbar control; `apps/web/src/app/toolbar-css.spec.ts` fails if you do. Check new list pages at 390, 768 and 1280 px wide.

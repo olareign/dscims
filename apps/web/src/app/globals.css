@@ -92,13 +92,15 @@ textarea.inp{height:auto;padding:12px 14px;line-height:1.45}
 .stt{display:flex;overflow-x:auto;scrollbar-width:none;border-bottom:1px solid var(--line);padding:0 8px}
 .stt a{padding:14px 12px;text-decoration:none;color:var(--muted);font-weight:600;border-bottom:2.5px solid transparent;display:flex;gap:8px;align-items:center;margin-bottom:-1px;white-space:nowrap}
 .stt a.on{color:var(--navy);border-color:var(--navy)}.stt .n{font-size:12px;background:#F1F5F9;color:#334155;border-radius:999px;padding:1px 8px}.stt a.on .n{background:var(--navy);color:#fff}
-.toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:14px 16px}
-.srx{flex:1 1 150px;display:flex;align-items:center;gap:10px;height:46px;border:1.5px solid #CBD5E1;border-radius:14px;padding:0 12px;color:var(--faint);background:#fff;min-width:0}
+/* Every control in a list toolbar uses --ctl-h and the row is bottom-aligned, so search, selects, dates and buttons share one baseline. */
+:root{--ctl-h:44px}
+.toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;padding:14px 16px}
+.srx{flex:1 1 150px;display:flex;align-items:center;gap:10px;height:var(--ctl-h);border:1.5px solid #CBD5E1;border-radius:14px;padding:0 12px;color:var(--faint);background:#fff;min-width:0}
 .srx input{border:0;outline:0;background:none;flex:1;min-width:0;font:inherit;color:var(--ink)}
 .fpanel{display:none;flex:1 1 100%;flex-wrap:wrap;gap:10px;align-items:flex-end}
 .fpanel.open{display:flex}
-.fpanel>div{flex:1 1 150px;min-width:0}.fpanel .inp{height:44px}
-.fbtn{display:inline-flex;align-items:center;gap:8px;min-height:46px;padding:0 14px;border-radius:14px;border:1.5px solid #CBD5E1;background:#fff;font-weight:600;color:var(--navy);cursor:pointer;font-size:14px}
+.fpanel>div{flex:1 1 150px;min-width:0}.fpanel .inp{height:var(--ctl-h)}.fpanel .btn{min-height:var(--ctl-h)}.fpanel .lbl{margin-bottom:6px}
+.fbtn{display:inline-flex;align-items:center;gap:8px;min-height:var(--ctl-h);padding:0 14px;border-radius:14px;border:1.5px solid #CBD5E1;background:#fff;font-weight:600;color:var(--navy);cursor:pointer;font-size:14px}
 .fbtn em{font-style:normal;min-width:20px;height:20px;border-radius:10px;background:var(--navy);color:#fff;font-size:11px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;padding:0 5px}
 .applied{display:flex;flex-wrap:wrap;gap:8px;padding:0 16px 14px}
 .rt .tr{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center;padding:14px 16px;border-top:1px solid var(--line);font-size:14px}
