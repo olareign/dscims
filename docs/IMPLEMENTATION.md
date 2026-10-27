@@ -8,10 +8,10 @@ Legend: `[x]` done, `[ ]` not started. Priority: P0 MVP, P1 Phase 2, P2 Phase 3.
 
 - [x] Migration `001-foundation.sql`: tenants, shops, users, sessions, tokens, settings, audit log, platform admins, idempotency keys; row-level security on every tenant table; append-only audit log
 - [x] API: email and password sign-in with lockout, invites, password reset, session revocation; users, shops, settings, audit log, dashboard overview; platform console (create, suspend, reactivate dealers)
-- [x] Web: sign-in, forgot and reset password, invite acceptance, first-run setup, overview, users, shops (with "use my location"), audit log, sales rules, more menu, platform console; phone, tablet and desktop layouts
+- [x] Web: sign-in, forgot and reset password, invite acceptance, first-run setup, overview, users, shops (with "use my location"), audit log, sales rules, your account (change password), more menu, platform console; phone, tablet and desktop layouts
 - [x] Tests: 27 shared, 66 API (including tenant isolation, roles, migrations), 8 web. Browser smoke test of onboarding on tablet, phone and desktop widths
 - [x] Deploy files: `render.yaml`, `apps/web/vercel.json`, `Dockerfile`, [DEPLOY.md](DEPLOY.md)
-- Not done in Phase 1: Lighthouse installability run, real-device Android check, global search (shown in the design, removed because nothing is searchable yet), change-password screen (API exists), local drafts
+- Not done in Phase 1: Lighthouse installability run, real-device Android check, global search (shown in the design, removed because nothing is searchable yet), local drafts
 
 ## Scaffold (done)
 
